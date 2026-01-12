@@ -75,6 +75,9 @@ class Conversation < ApplicationRecord
   enum status: { open: 0, resolved: 1, pending: 2, snoozed: 3 }
   enum priority: { low: 0, medium: 1, high: 2, urgent: 3 }
 
+  # Pipeline stages for CRM Kanban board
+  PIPELINE_STAGES = %w[lead qualification proposal negotiation won lost].freeze
+
   scope :unassigned, -> { where(assignee_id: nil) }
   scope :assigned, -> { where.not(assignee_id: nil) }
   scope :assigned_to, ->(agent) { where(assignee_id: agent.id) }
@@ -96,6 +99,10 @@ class Conversation < ApplicationRecord
       ON grouped_conversations.conversation_id = conversations.id"
     ).sort_on_last_user_message_at
   }
+
+  # Pipeline scopes
+  scope :with_pipeline_stage, ->(stage) { where("custom_attributes->>'pipeline_stage' = ?", stage) }
+  scope :in_pipeline, -> { where("custom_attributes ? 'pipeline_stage'") }
 
   belongs_to :account
   belongs_to :inbox
@@ -203,6 +210,26 @@ class Conversation < ApplicationRecord
     messages.chat.last(5)
   end
 
+  # Pipeline methods
+  def pipeline_stage
+    custom_attributes&.dig('pipeline_stage')
+  end
+
+  def pipeline_stage=(stage)
+    raise ArgumentError, "Invalid pipeline stage: #{stage}" unless stage.nil? || PIPELINE_STAGES.include?(stage)
+
+    self.custom_attributes ||= {}
+    self.custom_attributes = custom_attributes.merge(
+      'pipeline_stage' => stage,
+      'pipeline_updated_at' => Time.current.iso8601,
+      'pipeline_updated_by' => Current.user&.id
+    )
+  end
+
+  def in_pipeline?
+    pipeline_stage.present?
+  end
+
   def csat_survey_link
     "#{ENV.fetch('FRONTEND_URL', nil)}/survey/responses/#{uuid}"
   end
@@ -273,7 +300,7 @@ class Conversation < ApplicationRecord
 
   def list_of_keys
     %w[team_id assignee_id assignee_agent_bot_id status snoozed_until custom_attributes label_list waiting_since
-       first_reply_created_at priority]
+       first_reply_created_at priority pipeline_stage]
   end
 
   def allowed_keys?

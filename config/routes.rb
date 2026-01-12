@@ -149,6 +149,13 @@ Rails.application.routes.draw do
             end
           end
 
+          # Pipeline routes for CRM Kanban board
+          resources :pipeline, only: [:index] do
+            member do
+              patch :update_stage
+            end
+          end
+
           resources :search, only: [:index] do
             collection do
               get :conversations
