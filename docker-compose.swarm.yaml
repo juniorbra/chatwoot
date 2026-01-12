@@ -2,13 +2,7 @@ version: "3.7"
 
 services:
   chatwoot_rails:
-    image: chatwoot-custom:feature-kanban-crm
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      args:
-        RAILS_ENV: production
-        NODE_ENV: production
+    image: chatwoot/chatwoot:latest
 
     networks:
       - rede_interna
@@ -67,7 +61,7 @@ services:
         max_attempts: 3
 
   chatwoot_sidekiq:
-    image: chatwoot-custom:feature-kanban-crm
+    image: chatwoot/chatwoot:latest
 
     networks:
       - rede_interna

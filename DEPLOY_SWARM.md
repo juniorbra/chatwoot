@@ -54,24 +54,24 @@ Cole este conteúdo (substitua o SECRET_KEY_BASE):
 
 ```bash
 SECRET_KEY_BASE=COLE_AQUI_O_RESULTADO_DO_OPENSSL
-FRONTEND_URL=http://n8neditor.adavance.com.br:3000
+FRONTEND_URL=http://chat.adavance.com.br:3000
 ```
 
 Salve: `Ctrl+O`, `Enter`, `Ctrl+X`
 
 ---
 
-## Passo 5: Build da Imagem
+## Passo 5: Puxar a Imagem Oficial do Chatwoot
 
-Buildar a imagem customizada (vai demorar 10-20 minutos):
+Em vez de buildar (que é pesado), vamos usar a imagem oficial:
 
 ```bash
-cd ~/chatwoot-custom
-docker build -f docker/Dockerfile -t chatwoot-custom:feature-kanban-crm .
+docker pull chatwoot/chatwoot:latest
 ```
 
-**Acompanhe o build:**
-- Se der erro, anote a mensagem e me envie
+Isso vai baixar a imagem pronta (mais rápido e leve).
+
+**Nota:** Suas customizações da branch `feature/kanban-crm` serão aplicadas depois via volumes ou você pode buildar a imagem em uma máquina mais potente e fazer push para Docker Hub.
 
 ---
 
@@ -91,7 +91,7 @@ Se já existir, ignore o erro.
 
 ### Opção A: Via Portainer UI (Recomendado)
 
-1. Acesse Portainer: `http://n8neditor.adavance.com.br:9000`
+1. Acesse Portainer: `http://chat.adavance.com.br:9000`
 2. Vá em **Stacks** → **Add Stack**
 3. Nome: `chatwoot`
 4. **Build method**: Web editor
