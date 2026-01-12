@@ -1,0 +1,126 @@
+version: "3.7"
+
+services:
+  chatwoot_rails:
+    image: chatwoot-custom:feature-kanban-crm
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        RAILS_ENV: production
+        NODE_ENV: production
+
+    networks:
+      - rede_interna
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      ## Database (usando seu Postgres existente)
+      - POSTGRES_DATABASE=chatwoot
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=18d66c7e69de8f1dd34b715552f366d7
+      - DATABASE_URL=postgresql://postgres:18d66c7e69de8f1dd34b715552f366d7@postgres:5432/chatwoot
+
+      ## Redis (usando seu Redis do n8n)
+      - REDIS_URL=redis://n8n_redis:6379/2
+      - REDIS_PASSWORD=
+
+      ## Rails
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - INSTALLATION_ENV=docker
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - RAILS_LOG_TO_STDOUT=true
+
+      ## Timezone
+      - TZ=America/Sao_Paulo
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+
+      ## Outros
+      - ENABLE_ACCOUNT_SIGNUP=false
+      - FORCE_SSL=false
+
+    volumes:
+      - chatwoot_storage:/app/storage
+
+    entrypoint: docker/entrypoints/rails.sh
+    command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2048M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  chatwoot_sidekiq:
+    image: chatwoot-custom:feature-kanban-crm
+
+    networks:
+      - rede_interna
+
+    environment:
+      ## Database
+      - POSTGRES_DATABASE=chatwoot
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=18d66c7e69de8f1dd34b715552f366d7
+      - DATABASE_URL=postgresql://postgres:18d66c7e69de8f1dd34b715552f366d7@postgres:5432/chatwoot
+
+      ## Redis
+      - REDIS_URL=redis://n8n_redis:6379/2
+      - REDIS_PASSWORD=
+
+      ## Rails
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - INSTALLATION_ENV=docker
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_LOG_TO_STDOUT=true
+
+      ## Timezone
+      - TZ=America/Sao_Paulo
+
+    volumes:
+      - chatwoot_storage:/app/storage
+
+    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1024M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+volumes:
+  chatwoot_storage:
+    external: true
+    name: chatwoot_storage
+
+networks:
+  rede_interna:
+    external: true
+    name: rede_interna
