@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  base: &base
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        RAILS_ENV: production
+        NODE_ENV: production
+    image: chatwoot-custom:feature-kanban-crm
+    env_file: .env
+    volumes:
+      - storage_data:/app/storage
+
+  rails:
+    <<: *base
+    container_name: chatwoot-rails
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+    entrypoint: docker/entrypoints/rails.sh
+    command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
+    restart: unless-stopped
+    networks:
+      - chatwoot
+
+  sidekiq:
+    <<: *base
+    container_name: chatwoot-sidekiq
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - NODE_ENV=production
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+    restart: unless-stopped
+    networks:
+      - chatwoot
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: chatwoot-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=chatwoot
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - chatwoot
+
+  redis:
+    image: redis:alpine
+    container_name: chatwoot-redis
+    restart: unless-stopped
+    command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
+    env_file: .env
+    volumes:
+      - redis_data:/data
+    ports:
+      - '6379:6379'
+    networks:
+      - chatwoot
+
+volumes:
+  storage_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  chatwoot:
+    driver: bridge
