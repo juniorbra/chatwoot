@@ -17,7 +17,6 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_USERNAME=postgres
       - POSTGRES_PASSWORD=18d66c7e69de8f1dd34b715552f366d7
-      - DATABASE_URL=postgresql://postgres:18d66c7e69de8f1dd34b715552f366d7@postgres:5432/chatwoot
 
       ## Redis (usando seu Redis do n8n)
       - REDIS_URL=redis://n8n_redis:6379/2
@@ -73,7 +72,6 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_USERNAME=postgres
       - POSTGRES_PASSWORD=18d66c7e69de8f1dd34b715552f366d7
-      - DATABASE_URL=postgresql://postgres:18d66c7e69de8f1dd34b715552f366d7@postgres:5432/chatwoot
 
       ## Redis
       - REDIS_URL=redis://n8n_redis:6379/2
