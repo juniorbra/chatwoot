@@ -10,6 +10,16 @@ services:
     ports:
       - "3000:3000"
 
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.chatwoot.rule=Host(`chat.adavance.com.br`)
+      - traefik.http.routers.chatwoot.entrypoints=websecure
+      - traefik.http.routers.chatwoot.priority=1
+      - traefik.http.routers.chatwoot.tls.certresolver=letsencryptresolver
+      - traefik.http.routers.chatwoot.service=chatwoot
+      - traefik.http.services.chatwoot.loadbalancer.server.port=3000
+      - traefik.http.services.chatwoot.loadbalancer.passHostHeader=true
+
     environment:
       ## Database (usando seu Postgres existente)
       - POSTGRES_DATABASE=chatwoot
@@ -27,7 +37,7 @@ services:
       - NODE_ENV=production
       - INSTALLATION_ENV=docker
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - FRONTEND_URL=${FRONTEND_URL:-https://chat.adavance.com.br}
       - RAILS_LOG_TO_STDOUT=true
 
       ## Timezone
@@ -36,7 +46,7 @@ services:
 
       ## Outros
       - ENABLE_ACCOUNT_SIGNUP=false
-      - FORCE_SSL=false
+      - FORCE_SSL=true
 
     volumes:
       - chatwoot_storage:/app/storage
