@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   chatwoot_rails:
-    image: chatwoot/chatwoot:latest
+    image: ghcr.io/juniorbra/chatwoot:kanban-crm
 
     depends_on:
       - chatwoot_postgres
@@ -74,7 +74,7 @@ services:
         max_attempts: 3
 
   chatwoot_sidekiq:
-    image: chatwoot/chatwoot:latest
+    image: ghcr.io/juniorbra/chatwoot:kanban-crm
 
     depends_on:
       - chatwoot_postgres
