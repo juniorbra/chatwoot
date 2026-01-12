@@ -15,6 +15,7 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import SidebarGroup from './SidebarGroup.vue';
 import SidebarProfileMenu from './SidebarProfileMenu.vue';
 import SidebarChangelogCard from './SidebarChangelogCard.vue';
+import YearInReviewBanner from '../year-in-review/YearInReviewBanner.vue';
 import ChannelLeaf from './ChannelLeaf.vue';
 import SidebarAccountSwitcher from './SidebarAccountSwitcher.vue';
 import Logo from 'next/icon/Logo.vue';
@@ -427,6 +428,13 @@ const menuItems = computed(() => {
       ],
     },
     {
+      name: 'Pipeline',
+      label: t('SIDEBAR.PIPELINE'),
+      icon: 'i-lucide-kanban-square',
+      to: accountScopedRoute('pipeline_index'),
+      activeOn: ['pipeline_index'],
+    },
+    {
       name: 'Portals',
       label: t('SIDEBAR.HELP_CENTER.TITLE'),
       icon: 'i-lucide-library-big',
@@ -484,12 +492,6 @@ const menuItems = computed(() => {
           icon: 'i-lucide-briefcase',
           to: accountScopedRoute('general_settings_index'),
         },
-        // {
-        //   name: 'Settings Captain',
-        //   label: t('SIDEBAR.CAPTAIN_AI'),
-        //   icon: 'i-woot-captain',
-        //   to: accountScopedRoute('captain_settings_index'),
-        // },
         {
           name: 'Settings Agents',
           label: t('SIDEBAR.AGENTS'),
@@ -660,6 +662,7 @@ const menuItems = computed(() => {
       <div
         class="pointer-events-none absolute inset-x-0 -top-[31px] h-8 bg-gradient-to-t from-n-solid-2 to-transparent"
       />
+      <YearInReviewBanner />
       <SidebarChangelogCard
         v-if="isOnChatwootCloud && !isACustomBrandedInstance"
       />

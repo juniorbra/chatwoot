@@ -1,0 +1,36 @@
+{
+  "PIPELINE": {
+    "HEADER": "Pipeline",
+    "LOADING": "Loading pipeline...",
+    "DESCRIPTION": "Manage your sales conversations through a visual kanban board. Drag and drop conversations between stages to track your sales process.",
+    "STAGES": {
+      "LEAD": "Lead",
+      "QUALIFICATION": "Qualification",
+      "PROPOSAL": "Proposal",
+      "NEGOTIATION": "Negotiation",
+      "WON": "Won",
+      "LOST": "Lost"
+    },
+    "EMPTY_STATE": {
+      "TITLE": "No conversations in this stage",
+      "MESSAGE": "Drag conversations here or start new ones"
+    },
+    "CONVERSATION_CARD": {
+      "LAST_ACTIVITY": "Last activity",
+      "ASSIGNED_TO": "Assigned to",
+      "UNASSIGNED": "Unassigned",
+      "NO_INBOX": "No inbox"
+    },
+    "FILTERS": {
+      "TITLE": "Filters",
+      "ALL_INBOXES": "All Inboxes",
+      "ALL_TEAMS": "All Teams",
+      "ALL_AGENTS": "All Agents"
+    },
+    "API": {
+      "SUCCESS_MESSAGE": "Conversation moved successfully",
+      "ERROR_MESSAGE": "Failed to move conversation. Please try again.",
+      "INVALID_STAGE": "Invalid pipeline stage"
+    }
+  }
+}
