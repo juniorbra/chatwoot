@@ -35,25 +35,24 @@ namespace :pipeline do
         contact = contacts.sample
         contact_inbox = ContactInbox.find_or_create_by!(
           contact: contact,
-          inbox: inbox
+          inbox: inbox,
+          source_id: SecureRandom.uuid
         )
 
-        conversation = Conversation.create!(
+        # Create conversation manually with required attributes
+        conversation = Conversation.new(
           account: account,
           inbox: inbox,
           contact: contact,
-          contact_inbox: contact_inbox,
-          status: :open
+          contact_inbox: contact_inbox
         )
+
+        # Save without validations first to get the conversation created
+        conversation.save(validate: false)
 
         # Set pipeline stage
         conversation.pipeline_stage = stage
         conversation.save!
-
-        # Optionally assign to an agent
-        if account.users.agents.any? && rand < 0.7
-          conversation.update!(assignee: account.users.agents.sample)
-        end
 
         conversations_created += 1
         puts "  ✅ Created conversation ##{conversation.display_id} in stage '#{stage}'"
