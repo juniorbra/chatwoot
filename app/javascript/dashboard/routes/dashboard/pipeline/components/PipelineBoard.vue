@@ -5,11 +5,15 @@ import { useI18n } from 'vue-i18n';
 import PipelineColumn from './PipelineColumn.vue';
 
 const store = useStore();
-const { t } = useI18n();
+useI18n();
 
-const conversationsByStage = computed(() => store.getters['pipeline/getConversationsByStage']);
-const stages = computed(() => store.getters['pipeline/getStages']);
-const isUpdating = computed(() => store.getters['pipeline/getUIFlags'].isUpdating);
+const conversationsByStage = computed(
+  () => store.getters['pipeline/getConversationsByStage']
+);
+const stages = computed(() => store.getters['pipeline/getStages'].slice(0, 4));
+const isUpdating = computed(
+  () => store.getters['pipeline/getUIFlags'].isUpdating
+);
 
 const handleMove = async ({ conversation, fromStage, toStage }) => {
   try {
@@ -19,32 +23,25 @@ const handleMove = async ({ conversation, fromStage, toStage }) => {
       fromStage,
     });
   } catch (error) {
-    // Show error notification
-    console.error('Failed to move conversation:', error);
-    // Optionally show a toast notification here
+    // Error handling is done by the API layer
   }
-};
-
-const updateConversations = (stage, conversations) => {
-  // This is called when dragging within the same column
-  // We don't need to do anything here as vuedraggable handles it
 };
 </script>
 
 <template>
-  <div class="flex gap-4 h-full overflow-x-auto p-4">
+  <div class="flex-1 min-h-0 p-6">
     <div
-      v-for="stage in stages"
-      :key="stage"
-      class="flex-shrink-0 w-80"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-full max-w-7xl mx-auto"
     >
-      <PipelineColumn
-        :stage="stage"
-        :conversations="conversationsByStage[stage] || []"
-        :is-updating="isUpdating"
-        @update:conversations="conversations => updateConversations(stage, conversations)"
-        @move="handleMove"
-      />
+      <div v-for="stage in stages" :key="stage" class="flex flex-col h-full">
+        <PipelineColumn
+          :stage="stage"
+          :conversations="conversationsByStage[stage] || []"
+          :is-updating="isUpdating"
+          @update:conversations="() => {}"
+          @move="handleMove"
+        />
+      </div>
     </div>
   </div>
 </template>

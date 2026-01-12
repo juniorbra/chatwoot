@@ -35,7 +35,7 @@ export const actions = {
         stages: response.data.stages,
       });
     } catch (error) {
-      // Ignore error
+      // Error is expected to be handled by the API layer
     } finally {
       commit(types.SET_PIPELINE_UI_FLAG, { isFetching: false });
     }
