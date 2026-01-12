@@ -77,10 +77,23 @@ Isso vai baixar a imagem pronta (mais rápido e leve).
 
 ## Passo 6: Criar Database no PostgreSQL
 
-Antes de subir o Chatwoot, crie o database:
+Antes de subir o Chatwoot, crie o database. Primeiro, identifique o container correto do Postgres:
 
 ```bash
-docker exec -it $(docker ps -q -f name=postgres) psql -U postgres -c "CREATE DATABASE chatwoot;"
+docker ps | grep postgres
+```
+
+Você verá vários containers. Use o container **postgres_postgres** (Postgres 14 da stack ORION):
+
+```bash
+# Listar containers e pegar o ID/nome do postgres_postgres
+docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Image}}" | grep postgres_postgres
+
+# Criar database usando o CONTAINER_ID ou nome completo
+docker exec CONTAINER_ID psql -U postgres -c "CREATE DATABASE chatwoot;"
+
+# Exemplo (substitua pelo ID correto):
+# docker exec f5b321fa94d0 psql -U postgres -c "CREATE DATABASE chatwoot;"
 ```
 
 Se já existir, ignore o erro.
