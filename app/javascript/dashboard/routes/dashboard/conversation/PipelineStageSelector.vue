@@ -77,7 +77,7 @@ export default {
             if (this.currentChat && this.currentChat.id) {
               const updatedCustomAttributes = {
                 ...this.currentChat.custom_attributes,
-                pipeline_stage: updatedConversation.pipeline_stage,
+                pipeline_stage: stage,
               };
               this.$store.commit('conversations/UPDATE_CONVERSATION_CUSTOM_ATTRIBUTES', updatedCustomAttributes);
             }
