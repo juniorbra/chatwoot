@@ -1,12 +1,10 @@
 <script>
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
-import ContactDetailsItem from './ContactDetailsItem.vue';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
 
 export default {
   components: {
-    ContactDetailsItem,
     MultiselectDropdown,
   },
   props: {
@@ -114,23 +112,17 @@ export default {
 </script>
 
 <template>
-  <div class="bg-n-background">
-    <div class="multiselect-wrap--small">
-      <ContactDetailsItem
-        compact
-        :title="$t('CONVERSATION_SIDEBAR.ACCORDION.PIPELINE_STAGE')"
-      />
-      <MultiselectDropdown
-        :options="pipelineStages"
-        :selected-item="assignedPipelineStage"
-        :multiselector-title="
-          $t('CONVERSATION_SIDEBAR.ACCORDION.PIPELINE_STAGE')
-        "
-        :multiselector-placeholder="$t('PIPELINE.SELECT_PLACEHOLDER')"
-        :no-search-result="$t('PIPELINE.NO_RESULTS')"
-        :input-placeholder="$t('PIPELINE.INPUT_PLACEHOLDER')"
-        @select="onClickAssignStage"
-      />
-    </div>
+  <div class="multiselect-wrap--small">
+    <MultiselectDropdown
+      :options="pipelineStages"
+      :selected-item="assignedPipelineStage"
+      :multiselector-title="
+        $t('CONVERSATION_SIDEBAR.ACCORDION.PIPELINE_STAGE')
+      "
+      :multiselector-placeholder="$t('PIPELINE.SELECT_PLACEHOLDER')"
+      :no-search-result="$t('PIPELINE.NO_RESULTS')"
+      :input-placeholder="$t('PIPELINE.INPUT_PLACEHOLDER')"
+      @select="onClickAssignStage"
+    />
   </div>
 </template>

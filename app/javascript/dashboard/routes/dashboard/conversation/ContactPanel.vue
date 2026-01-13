@@ -252,7 +252,16 @@ onMounted(() => {
             </AccordionItem>
           </woot-feature-toggle>
           <div v-else-if="element.name === 'pipeline_stage'">
-            <PipelineStageSelector :conversation-id="conversationId" />
+            <AccordionItem
+              :title="$t('CONVERSATION_SIDEBAR.ACCORDION.PIPELINE_STAGE')"
+              :is-open="isContactSidebarItemOpen('is_pipeline_stage_open')"
+              compact
+              @toggle="
+                value => toggleSidebarUIState('is_pipeline_stage_open', value)
+              "
+            >
+              <PipelineStageSelector :conversation-id="conversationId" />
+            </AccordionItem>
           </div>
           <div
             v-else-if="
