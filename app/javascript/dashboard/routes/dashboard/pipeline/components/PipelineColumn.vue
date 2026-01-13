@@ -6,7 +6,7 @@ import PipelineCard from './PipelineCard.vue';
 
 const props = defineProps({
   stage: {
-    type: String,
+    type: Object,
     required: true,
   },
   conversations: {
@@ -23,9 +23,7 @@ const emit = defineEmits(['update:conversations', 'move']);
 
 const { t } = useI18n();
 
-const stageLabel = computed(() =>
-  t(`PIPELINE.STAGES.${props.stage.toUpperCase()}`)
-);
+const stageLabel = computed(() => props.stage.name);
 const conversationCount = computed(() => props.conversations.length);
 
 const localConversations = computed({
@@ -38,7 +36,7 @@ const onMove = evt => {
   // It can be 'added' or 'removed' events
   if (evt.added) {
     const { element, newIndex } = evt.added;
-    const toStage = props.stage;
+    const toStage = props.stage.id;
 
     // We need to get the fromStage from the element's metadata
     // The element should have the old stage info
@@ -67,9 +65,15 @@ const dragOptions = computed(() => ({
     <div
       class="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
     >
-      <h3 class="font-semibold text-slate-900 dark:text-slate-25">
-        {{ stageLabel }}
-      </h3>
+      <div class="flex items-center gap-2">
+        <div
+          class="w-3 h-3 rounded-full"
+          :style="{ backgroundColor: stage.color }"
+        />
+        <h3 class="font-semibold text-slate-900 dark:text-slate-25">
+          {{ stageLabel }}
+        </h3>
+      </div>
       <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
         {{ conversationCount }}
         {{ conversationCount === 1 ? 'conversation' : 'conversations' }}

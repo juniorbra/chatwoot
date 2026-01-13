@@ -2,6 +2,7 @@
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
+import PipelineStagesAPI from 'dashboard/api/pipelineStages';
 
 export default {
   components: {
@@ -20,30 +21,6 @@ export default {
           id: null,
           name: this.$t('PIPELINE.STAGES.NONE'),
         },
-        {
-          id: 'lead',
-          name: this.$t('PIPELINE.STAGES.LEAD'),
-        },
-        {
-          id: 'qualification',
-          name: this.$t('PIPELINE.STAGES.QUALIFICATION'),
-        },
-        {
-          id: 'proposal',
-          name: this.$t('PIPELINE.STAGES.PROPOSAL'),
-        },
-        {
-          id: 'negotiation',
-          name: this.$t('PIPELINE.STAGES.NEGOTIATION'),
-        },
-        {
-          id: 'won',
-          name: this.$t('PIPELINE.STAGES.WON'),
-        },
-        {
-          id: 'lost',
-          name: this.$t('PIPELINE.STAGES.LOST'),
-        },
       ],
     };
   },
@@ -56,7 +33,7 @@ export default {
         const currentStage =
           this.currentChat?.custom_attributes?.pipeline_stage;
         const selectedOption = this.pipelineStages.find(
-          opt => opt.id === currentStage
+          opt => String(opt.id) === String(currentStage)
         );
         return selectedOption || this.pipelineStages[0];
       },
@@ -100,6 +77,20 @@ export default {
     },
   },
   methods: {
+    async loadPipelineStages() {
+      try {
+        const response = await PipelineStagesAPI.get();
+        this.pipelineStages = [
+          {
+            id: null,
+            name: this.$t('PIPELINE.STAGES.NONE'),
+          },
+          ...response.data,
+        ];
+      } catch (error) {
+        console.error('Error loading pipeline stages:', error);
+      }
+    },
     onClickAssignStage(selectedStageItem) {
       const isSameStage =
         this.assignedPipelineStage &&
@@ -107,6 +98,9 @@ export default {
 
       this.assignedPipelineStage = isSameStage ? null : selectedStageItem;
     },
+  },
+  mounted() {
+    this.loadPipelineStages();
   },
 };
 </script>
@@ -116,9 +110,7 @@ export default {
     <MultiselectDropdown
       :options="pipelineStages"
       :selected-item="assignedPipelineStage"
-      :multiselector-title="
-        $t('CONVERSATION_SIDEBAR.ACCORDION.PIPELINE_STAGE')
-      "
+      :multiselector-title="$t('CONVERSATION_SIDEBAR.ACCORDION.PIPELINE_STAGE')"
       :multiselector-placeholder="$t('PIPELINE.SELECT_PLACEHOLDER')"
       :no-search-result="$t('PIPELINE.NO_RESULTS')"
       :input-placeholder="$t('PIPELINE.INPUT_PLACEHOLDER')"

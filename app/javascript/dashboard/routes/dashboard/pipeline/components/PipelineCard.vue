@@ -33,7 +33,11 @@ const lastActivityAt = computed(() => {
     if (!timestamp) return 'No activity';
     return shortTimestamp(dynamicTime(timestamp));
   } catch (error) {
-    console.error('Error formatting timestamp:', error, props.conversation.last_activity_at);
+    console.error(
+      'Error formatting timestamp:',
+      error,
+      props.conversation.last_activity_at
+    );
     return 'Invalid date';
   }
 });

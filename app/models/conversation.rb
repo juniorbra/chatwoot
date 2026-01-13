@@ -75,9 +75,6 @@ class Conversation < ApplicationRecord
   enum status: { open: 0, resolved: 1, pending: 2, snoozed: 3 }
   enum priority: { low: 0, medium: 1, high: 2, urgent: 3 }
 
-  # Pipeline stages for CRM Kanban board
-  PIPELINE_STAGES = %w[lead qualification proposal negotiation won lost].freeze
-
   scope :unassigned, -> { where(assignee_id: nil) }
   scope :assigned, -> { where.not(assignee_id: nil) }
   scope :assigned_to, ->(agent) { where(assignee_id: agent.id) }
@@ -101,7 +98,7 @@ class Conversation < ApplicationRecord
   }
 
   # Pipeline scopes
-  scope :with_pipeline_stage, ->(stage) { where("custom_attributes->>'pipeline_stage' = ?", stage) }
+  scope :with_pipeline_stage, ->(stage_id) { where("custom_attributes->>'pipeline_stage' = ?", stage_id.to_s) }
   scope :in_pipeline, -> { where("custom_attributes ? 'pipeline_stage'") }
 
   belongs_to :account
@@ -216,11 +213,15 @@ class Conversation < ApplicationRecord
   end
 
   def pipeline_stage=(stage)
-    raise ArgumentError, "Invalid pipeline stage: #{stage}" unless stage.nil? || PIPELINE_STAGES.include?(stage)
+    # Validate stage exists in account's pipeline stages or is nil
+    unless stage.nil?
+      valid_stage = account.pipeline_stages.exists?(id: stage)
+      raise ArgumentError, "Invalid pipeline stage: #{stage}" unless valid_stage
+    end
 
     self.custom_attributes ||= {}
     self.custom_attributes = custom_attributes.merge(
-      'pipeline_stage' => stage,
+      'pipeline_stage' => stage&.to_s,
       'pipeline_updated_at' => Time.current.iso8601,
       'pipeline_updated_by' => Current.user&.id
     )

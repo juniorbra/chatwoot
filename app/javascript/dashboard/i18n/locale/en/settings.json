@@ -331,6 +331,8 @@
     "APPLICATIONS": "Applications",
     "LABELS": "Labels",
     "CUSTOM_ATTRIBUTES": "Custom Attributes",
+    "PIPELINE": "Pipeline",
+    "PIPELINE_STAGES": "Pipeline Stages",
     "AUTOMATION": "Automation",
     "MACROS": "Macros",
     "TEAMS": "Teams",

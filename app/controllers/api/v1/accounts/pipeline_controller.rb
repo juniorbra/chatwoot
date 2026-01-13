@@ -3,30 +3,32 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
 
   def index
     @conversations_by_stage = {}
+    @stages = current_account.pipeline_stages.order(:position)
 
-    Conversation::PIPELINE_STAGES.each do |stage|
-      @conversations_by_stage[stage] = current_account
-                                        .conversations
-                                        .with_pipeline_stage(stage)
-                                        .includes(:inbox, :contact, :assignee, :team)
-                                        .order(last_activity_at: :desc)
-                                        .limit(25)
+    @stages.each do |stage|
+      @conversations_by_stage[stage.id.to_s] = current_account
+                                               .conversations
+                                               .with_pipeline_stage(stage.id)
+                                               .includes(:inbox, :contact, :assignee, :team)
+                                               .order(last_activity_at: :desc)
+                                               .limit(25)
     end
 
     render json: {
       conversations_by_stage: @conversations_by_stage.transform_values { |convs| convs.map { |c| conversation_json(c) } },
-      stages: Conversation::PIPELINE_STAGES
+      stages: @stages.as_json(only: [:id, :name, :position, :color])
     }
   end
 
   def update_stage
-    stage = params[:stage]
+    stage_id = params[:stage]
 
-    unless stage.nil? || Conversation::PIPELINE_STAGES.include?(stage)
-      return render json: { error: "Invalid pipeline stage: #{stage}" }, status: :unprocessable_entity
+    unless stage_id.nil?
+      stage = current_account.pipeline_stages.find_by(id: stage_id)
+      return render json: { error: "Invalid pipeline stage: #{stage_id}" }, status: :unprocessable_entity unless stage
     end
 
-    @conversation.pipeline_stage = stage
+    @conversation.pipeline_stage = stage_id
 
     if @conversation.save
       render json: { conversation: conversation_json(@conversation) }
@@ -65,15 +67,19 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
         name: conversation.inbox.name,
         channel_type: conversation.inbox.channel_type
       },
-      assignee: conversation.assignee ? {
-        id: conversation.assignee.id,
-        name: conversation.assignee.name,
-        avatar_url: conversation.assignee.avatar_url
-      } : nil,
-      team: conversation.team ? {
-        id: conversation.team.id,
-        name: conversation.team.name
-      } : nil
+      assignee: if conversation.assignee
+                  {
+                    id: conversation.assignee.id,
+                    name: conversation.assignee.name,
+                    avatar_url: conversation.assignee.avatar_url
+                  }
+                end,
+      team: if conversation.team
+              {
+                id: conversation.team.id,
+                name: conversation.team.name
+              }
+            end
     }
   end
 end

@@ -14,7 +14,6 @@ const isLoading = computed(
 onMounted(async () => {
   try {
     await store.dispatch('pipeline/get');
-    console.log('Pipeline data loaded:', store.getters['pipeline/getConversationsByStage']);
   } catch (error) {
     console.error('Error loading pipeline:', error);
   }

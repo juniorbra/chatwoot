@@ -529,6 +529,12 @@ const menuItems = computed(() => {
           to: accountScopedRoute('attributes_list'),
         },
         {
+          name: 'Settings Pipeline Stages',
+          label: t('SIDEBAR.PIPELINE_STAGES'),
+          icon: 'i-lucide-columns',
+          to: accountScopedRoute('pipeline_stages_list'),
+        },
+        {
           name: 'Settings Automation',
           label: t('SIDEBAR.AUTOMATION'),
           icon: 'i-lucide-workflow',
