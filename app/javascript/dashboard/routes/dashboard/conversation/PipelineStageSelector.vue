@@ -72,14 +72,17 @@ export default {
             stage,
             fromStage,
           })
-          .then(updatedConversation => {
+          .then(() => {
             // Update the current conversation in the store with the new pipeline stage
             if (this.currentChat && this.currentChat.id) {
-              const updatedCustomAttributes = {
-                ...this.currentChat.custom_attributes,
-                pipeline_stage: stage,
+              const updatedChat = {
+                ...this.currentChat,
+                custom_attributes: {
+                  ...this.currentChat.custom_attributes,
+                  pipeline_stage: stage,
+                },
               };
-              this.$store.commit('conversations/UPDATE_CONVERSATION_CUSTOM_ATTRIBUTES', updatedCustomAttributes);
+              this.$store.commit('UPDATE_CONVERSATION', updatedChat);
             }
 
             const stageName = stageItem
