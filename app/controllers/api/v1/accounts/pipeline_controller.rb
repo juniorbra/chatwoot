@@ -52,7 +52,7 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
       pipeline_stage: conversation.pipeline_stage,
       assignee_id: conversation.assignee_id,
       team_id: conversation.team_id,
-      last_activity_at: conversation.last_activity_at&.iso8601,
+      last_activity_at: conversation.last_activity_at&.to_i,
       contact: {
         id: conversation.contact.id,
         name: conversation.contact.name,
