@@ -156,6 +156,13 @@ Rails.application.routes.draw do
             end
           end
 
+          # Pipeline stages configuration
+          resources :pipeline_stages, only: [:index, :create, :update, :destroy] do
+            collection do
+              post :reorder
+            end
+          end
+
           resources :search, only: [:index] do
             collection do
               get :conversations
