@@ -19,6 +19,7 @@ import ConversationInfo from './ConversationInfo.vue';
 import CustomAttributes from './customAttributes/CustomAttributes.vue';
 import Draggable from 'vuedraggable';
 import MacrosList from './Macros/List.vue';
+import PipelineStageSelector from './PipelineStageSelector.vue';
 import ShopifyOrdersList from 'dashboard/components/widgets/conversation/ShopifyOrdersList.vue';
 import SidebarActionsHeader from 'dashboard/components-next/SidebarActionsHeader.vue';
 import LinearIssuesList from 'dashboard/components/widgets/conversation/linear/IssuesList.vue';
@@ -250,6 +251,9 @@ onMounted(() => {
               <MacrosList :conversation-id="conversationId" />
             </AccordionItem>
           </woot-feature-toggle>
+          <div v-else-if="element.name === 'pipeline_stage'">
+            <PipelineStageSelector :conversation-id="conversationId" />
+          </div>
           <div
             v-else-if="
               element.name === 'linear_issues' &&
