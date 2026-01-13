@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import PipelineColumn from './PipelineColumn.vue';
@@ -14,6 +14,11 @@ const stages = computed(() => store.getters['pipeline/getStages'].slice(0, 4));
 const isUpdating = computed(
   () => store.getters['pipeline/getUIFlags'].isUpdating
 );
+
+watch([conversationsByStage, stages], ([convs, stgs]) => {
+  console.log('PipelineBoard - conversationsByStage:', convs);
+  console.log('PipelineBoard - stages:', stgs);
+}, { immediate: true });
 
 const handleMove = async ({ conversation, fromStage, toStage }) => {
   try {

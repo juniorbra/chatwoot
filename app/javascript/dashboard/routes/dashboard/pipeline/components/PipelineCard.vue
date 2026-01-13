@@ -16,16 +16,26 @@ const props = defineProps({
 const router = useRouter();
 const route = useRoute();
 
-const contactName = computed(() => props.conversation.contact?.name || 'Unknown Contact');
+const contactName = computed(
+  () => props.conversation.contact?.name || 'Unknown Contact'
+);
 const contactEmail = computed(() => props.conversation.contact?.email);
 const contactThumbnail = computed(() => props.conversation.contact?.thumbnail);
-const inboxName = computed(() => props.conversation.inbox?.name || 'Unknown Inbox');
+const inboxName = computed(
+  () => props.conversation.inbox?.name || 'Unknown Inbox'
+);
 const assigneeName = computed(() => props.conversation.assignee?.name);
 const assigneeAvatar = computed(() => props.conversation.assignee?.avatar_url);
 
 const lastActivityAt = computed(() => {
-  const timestamp = props.conversation.last_activity_at;
-  return timestamp ? shortTimestamp(dynamicTime(timestamp)) : '';
+  try {
+    const timestamp = props.conversation.last_activity_at;
+    if (!timestamp) return 'No activity';
+    return shortTimestamp(dynamicTime(timestamp));
+  } catch (error) {
+    console.error('Error formatting timestamp:', error, props.conversation.last_activity_at);
+    return 'Invalid date';
+  }
 });
 
 const onCardClick = () => {
@@ -53,10 +63,15 @@ const onCardClick = () => {
         rounded-full
       />
       <div class="flex-1 min-w-0">
-        <div class="font-medium text-sm text-slate-900 dark:text-slate-25 truncate">
+        <div
+          class="font-medium text-sm text-slate-900 dark:text-slate-25 truncate"
+        >
           {{ contactName }}
         </div>
-        <div v-if="contactEmail" class="text-xs text-slate-600 dark:text-slate-400 truncate">
+        <div
+          v-if="contactEmail"
+          class="text-xs text-slate-600 dark:text-slate-400 truncate"
+        >
           {{ contactEmail }}
         </div>
       </div>
