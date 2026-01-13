@@ -247,7 +247,6 @@
     "SUCCESS_DELETE_CONVERSATION": "Conversation deleted successfully",
     "FAIL_DELETE_CONVERSATION": "Couldn't delete conversation! Try again",
     "FILE_SIZE_LIMIT": "File exceeds the {MAXIMUM_SUPPORTED_FILE_UPLOAD_SIZE} MB attachment limit",
-    "FILE_TYPE_NOT_SUPPORTED": "This {fileName} file type is not supported in this conversation",
     "MESSAGE_ERROR": "Unable to send this message, please try again later",
     "SENT_BY": "Sent by:",
     "BOT": "Bot",
@@ -349,6 +348,7 @@
       "CONTACT_ATTRIBUTES": "Contact Attributes",
       "PREVIOUS_CONVERSATION": "Previous Conversations",
       "MACROS": "Macros",
+      "PIPELINE_STAGE": "Pipeline Stage",
       "LINEAR_ISSUES": "Linked Linear Issues",
       "SHOPIFY_ORDERS": "Shopify Orders"
     },
