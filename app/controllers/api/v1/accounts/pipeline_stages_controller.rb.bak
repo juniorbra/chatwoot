@@ -42,15 +42,9 @@ class Api::V1::Accounts::PipelineStagesController < Api::V1::Accounts::BaseContr
     stages_params = params.require(:stages)
 
     ActiveRecord::Base.transaction do
-      # Temporarily set positions to a high value to avoid unique constraint violations
-      stages_params.each do |stage_data|
+      stages_params.each_with_index do |stage_data, index|
         stage = current_account.pipeline_stages.find(stage_data[:id])
-        stage.update_column(:position, stage.position + 100)
-      end
-
-      stages_params.each do |stage_data|
-        stage = current_account.pipeline_stages.find(stage_data[:id])
-        stage.update!(position: stage_data[:position])
+        stage.update!(position: index)
       end
     end
 

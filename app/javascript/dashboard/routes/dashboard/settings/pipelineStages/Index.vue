@@ -208,17 +208,17 @@ onMounted(() => {
               class="w-12 h-10 rounded-lg border border-slate-300 cursor-pointer"
             />
             <Button
-              variant="solid"
-              color-scheme="primary"
-              size="small"
+              solid
+              blue
+              sm
               @click="updateStage"
             >
               Save
             </Button>
             <Button
-              variant="hollow"
-              color-scheme="secondary"
-              size="small"
+              outline
+              slate
+              sm
               @click="cancelEdit"
             >
               Cancel
@@ -234,18 +234,18 @@ onMounted(() => {
               stage.name
             }}</span>
             <Button
-              variant="hollow"
-              color-scheme="secondary"
-              size="small"
+              outline
+              slate
+              sm
               @click="startEdit(stage)"
             >
               Edit
             </Button>
             <Button
               v-if="stages.length > 1"
-              variant="hollow"
-              color-scheme="alert"
-              size="small"
+              outline
+              ruby
+              sm
               @click="deleteStage(stage.id)"
             >
               Delete
@@ -270,17 +270,17 @@ onMounted(() => {
               class="w-12 h-10 rounded-lg border border-slate-300 cursor-pointer"
             />
             <Button
-              variant="solid"
-              color-scheme="primary"
-              size="small"
+              solid
+              blue
+              sm
               @click="addStage"
             >
               Add
             </Button>
             <Button
-              variant="hollow"
-              color-scheme="secondary"
-              size="small"
+              outline
+              slate
+              sm
               @click="isAddingStage = false"
             >
               Cancel
@@ -291,8 +291,8 @@ onMounted(() => {
         <Button
           v-if="!isAddingStage && canAddMore"
           icon="i-lucide-circle-plus"
-          variant="solid"
-          color-scheme="primary"
+          solid
+          blue
           :disabled="!canAddMore"
           @click="isAddingStage = true"
         >

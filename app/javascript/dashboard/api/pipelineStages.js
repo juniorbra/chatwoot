@@ -1,3 +1,4 @@
+/* global axios */
 import ApiClient from './ApiClient';
 
 class PipelineStagesAPI extends ApiClient {
@@ -6,7 +7,7 @@ class PipelineStagesAPI extends ApiClient {
   }
 
   reorder(stages) {
-    return this.axios.post(`${this.url}/reorder`, { stages });
+    return axios.post(`${this.url}/reorder`, { stages });
   }
 }
 
