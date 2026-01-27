@@ -75,8 +75,11 @@ const dragOptions = computed(() => ({
         </h3>
       </div>
       <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
-        {{ conversationCount }}
-        {{ conversationCount === 1 ? 'conversation' : 'conversations' }}
+        {{
+          conversationCount === 1
+            ? t('PIPELINE.COLUMN.CONVERSATION', { count: conversationCount })
+            : t('PIPELINE.COLUMN.CONVERSATIONS', { count: conversationCount })
+        }}
       </p>
     </div>
 

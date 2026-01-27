@@ -28,6 +28,10 @@
       "ALL_TEAMS": "All Teams",
       "ALL_AGENTS": "All Agents"
     },
+    "COLUMN": {
+      "CONVERSATION": "{count} conversation",
+      "CONVERSATIONS": "{count} conversations"
+    },
     "API": {
       "SUCCESS_MESSAGE": "Conversation moved successfully",
       "ERROR_MESSAGE": "Failed to move conversation. Please try again.",
