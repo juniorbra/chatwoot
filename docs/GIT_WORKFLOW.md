@@ -200,22 +200,59 @@ overmind start -f Procfile.dev
 
 ---
 
-### 6. Deploy em Staging (SE TIVER)
+### 6. Deploy em Staging (OBRIGATÓRIO)
 
-**Se você não tem staging**, pule para Cliente Piloto.
+⚠️ **NUNCA pule esta etapa!** Staging é sua proteção contra quebrar produção.
 
 ```bash
 # 1. Push branch temporária
 git push origin test/sync-$(date +%Y%m%d)
 
-# 2. Deploy em staging
-# (comando depende da sua infra)
+# 2. Ir para diretório de staging
+cd ~/chatwoot-staging
 
-# 3. Monitorar por 3-7 dias
-# - Verificar logs: tail -f log/production.log
-# - Testar com cliente piloto
-# - Verificar métricas (se tiver)
+# 3. Checkout no branch de teste
+git fetch origin
+git checkout test/sync-$(date +%Y%m%d)
+
+# 4. Rebuild imagem Docker
+docker build -t ghcr.io/juniorbra/chatwoot:staging-sync .
+
+# 5. Atualizar stack
+docker stack deploy -c docker-compose.swarm.yaml chatwoot-staging
+
+# 6. Rodar migrations
+docker exec -it $(docker ps -q -f name=chatwoot-staging.*rails) \
+  bundle exec rails db:migrate RAILS_ENV=staging
+
+# 7. Ver logs para erros
+docker logs --tail 100 $(docker ps -q -f name=chatwoot-staging.*rails) | grep -i error
+
+# 8. Monitorar por 3-7 dias
+# - Acessar staging.botvance.com.br
+# - Seguir checklist de testes (ver docs/STAGING_WORKFLOW.md)
+# - Testar com cliente piloto (se possível)
+# - Verificar logs diariamente
 ```
+
+**Checklist de Testes no Staging**:
+- [ ] Login/logout funciona
+- [ ] Pipeline/Kanban aparece no menu
+- [ ] Drag & drop de conversas funciona
+- [ ] Mudança de stage persiste
+- [ ] Logos customizados aparecem
+- [ ] Criar nova conversa funciona
+- [ ] Enviar/receber mensagens funciona
+- [ ] Console do browser sem erros (F12)
+- [ ] Logs sem exceptions críticas
+
+**Quando considerar OK**:
+- ✅ Todos testes passaram
+- ✅ 3-7 dias sem erros em staging
+- ✅ Cliente piloto validou (se tiver)
+- ✅ Performance aceitável (<3s carregamento)
+
+**Ver documentação completa**: [docs/STAGING_WORKFLOW.md](STAGING_WORKFLOW.md)
 
 ---
 
@@ -266,6 +303,133 @@ git push origin feature/kanban-crm --tags
 git branch -d test/sync-$(date +%Y%m%d)
 git push origin --delete test/sync-$(date +%Y%m%d)  # Se fez push dela
 ```
+
+---
+
+## 🛡️ Como Garantir Compatibilidade com Upstream
+
+### Princípios de Customização Segura
+
+Para que suas customizações sobrevivam a syncs do upstream, siga estas regras:
+
+#### 1. **Arquivos que NUNCA customizar** ❌
+
+Estes arquivos mudam constantemente no upstream e causarão conflitos:
+
+- `db/schema.rb` → Use migrations ao invés
+- `Gemfile.lock` → Deixe o bundler gerenciar
+- `package-lock.json` / `pnpm-lock.yaml` → Deixe o pnpm gerenciar
+- `config/environments/*` → Use `.env` ao invés
+
+#### 2. **Arquivos OK para customizar** ✅ (mas com cuidado)
+
+- `config/routes.rb` → Adicione rotas ao final, comente bem
+- `app/models/*` → Use `prepend_mod_with` (Enterprise pattern)
+- `app/controllers/*` → Herde de controllers base quando possível
+- `app/views/*` → Copie para `app/views_custom/` se precisar override
+
+#### 3. **Padrão Recomendado: Isolamento**
+
+**Em vez de modificar arquivos existentes, crie novos**:
+
+```ruby
+# ❌ EVITE: Modificar app/models/conversation.rb direto
+class Conversation < ApplicationRecord
+  belongs_to :pipeline_stage  # ← Risco de conflito!
+end
+
+# ✅ PREFIRA: Criar app/models/concerns/conversation/pipeline.rb
+module Conversation::Pipeline
+  extend ActiveSupport::Concern
+
+  included do
+    belongs_to :pipeline_stage, optional: true
+  end
+end
+
+# Depois incluir em conversation.rb:
+class Conversation < ApplicationRecord
+  include Conversation::Pipeline  # ← Fácil de manter!
+end
+```
+
+**Vantagens**:
+- ✅ Conflitos de merge são raros
+- ✅ Fácil identificar código customizado
+- ✅ Fácil remover se não precisar mais
+- ✅ Upstream pode mudar conversation.rb sem quebrar
+
+#### 4. **Checklist de Compatibilidade Antes de Sync**
+
+Antes de cada sync upstream, verifique:
+
+```bash
+# 1. Ver quais arquivos você customizou
+git diff origin/master origin/feature/kanban-crm --name-only
+
+# 2. Ver quais desses arquivos mudaram no upstream
+git diff origin/master upstream/master --name-only
+
+# 3. Arquivos em AMBAS as listas = RISCO DE CONFLITO
+# Prepare-se para resolver manualmente
+
+# 4. Ler changelog do upstream para breaking changes
+# https://github.com/chatwoot/chatwoot/releases
+```
+
+#### 5. **Teste de Compatibilidade em Staging**
+
+O **staging** é onde você confirma que tudo continua funcionando:
+
+```bash
+# Deploy no staging primeiro
+cd ~/chatwoot-staging
+git checkout test/sync-$(date +%Y%m%d)
+docker stack deploy -c docker-compose.swarm.yaml chatwoot-staging
+
+# Rodar TODOS os specs customizados
+docker exec -it $(docker ps -q -f name=chatwoot-staging.*rails) bash -c "
+  bundle exec rspec spec/models/conversation_spec.rb
+  bundle exec rspec spec/controllers/api/v1/accounts/pipeline_stages_controller_spec.rb
+"
+
+# Se algum spec falhar = INCOMPATIBILIDADE!
+# Não fazer merge até corrigir
+```
+
+#### 6. **Documentar Customizações**
+
+Sempre documente o que foi customizado e **por quê**:
+
+```ruby
+# app/models/conversation.rb
+
+# CUSTOMIZAÇÃO BOTVANCE: Pipeline/Kanban CRM
+# Adiciona relacionamento com pipeline_stage para permitir
+# gerenciamento visual de conversas em formato Kanban
+# Mantido desde: v4.8.0-botvance.1
+# Última revisão: 2026-02-05
+include Conversation::Pipeline
+```
+
+**Benefício**: Se upstream mudar algo relacionado, você sabe o **impacto** e pode adaptar.
+
+#### 7. **Versionamento Claro**
+
+Use tags que mostram a base upstream:
+
+```bash
+# ✅ BOM: v4.11.0-botvance.1
+#         └─ base upstream clara
+
+# ❌ RUIM: v1.0.0-custom
+#          └─ não sei qual base upstream
+```
+
+Isso facilita:
+- Saber qual versão oficial você está usando
+- Identificar se está muito atrás do upstream
+- Planejar syncs
 
 ---
 
