@@ -63,15 +63,29 @@ Desenvolvimento → Staging (teste) → Produção (clientes reais)
 cd /opt
 sudo cp -r chatwoot chatwoot-staging
 
-# 2. Entrar no staging
+# 2. ⚠️ CRÍTICO: Corrigir permissões (evita erros de escrita)
+sudo chown -R chatwoot:chatwoot /opt/chatwoot-staging
+
+# 3. Entrar no staging
 cd chatwoot-staging
 
-# 3. Criar arquivo .env separado
+# 4. Criar arquivo .env separado
 cp .env .env.staging
 
-# 4. Editar .env.staging
+# 5. Gerar SECRET_KEY_BASE nova (segurança!)
+cd /opt/chatwoot-staging
+bundle exec rails secret > /tmp/staging_secret.txt
+echo "Nova SECRET_KEY_BASE gerada em: /tmp/staging_secret.txt"
+cat /tmp/staging_secret.txt
+
+# 6. Editar .env.staging
 nano .env.staging
 ```
+
+**Por que o `chown` é crítico?**
+- `sudo cp -r` copia com owner original (pode ser root)
+- Chatwoot precisa escrever logs, compilar assets, uploads
+- Sem permissão correta = erros 500 misteriosos
 
 **Configurações importantes no .env.staging**:
 
@@ -86,12 +100,17 @@ DATABASE_URL=postgresql://user:pass@localhost:5432/chatwoot_staging
 # Redis separado (ou usar db diferente)
 REDIS_URL=redis://localhost:6379/2  # Produção usa /1
 
-# Secret key diferente
-SECRET_KEY_BASE=gere_nova_secret_aqui
+# 🔐 Secret key DIFERENTE (copiar do /tmp/staging_secret.txt)
+SECRET_KEY_BASE=cole_aqui_a_chave_gerada_pelo_rails_secret
 
 # URL do staging
 FRONTEND_URL=https://staging.seusite.com
 ```
+
+**⚠️ Por que SECRET_KEY_BASE diferente?**
+- Evita conflito de cookies/sessões entre staging e produção
+- Se alguém acessar staging.seusite.com e depois seusite.com (produção), não vai ter problema de sessão
+- Segurança: se vazar secret do staging, produção não é comprometida
 
 **Criar banco staging**:
 
