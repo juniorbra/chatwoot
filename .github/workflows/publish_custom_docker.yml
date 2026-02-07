@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - feature/kanban-crm
+    tags:
+      - v*
   workflow_dispatch:
 
 env:
@@ -40,6 +42,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
+            type=ref,event=tag
             type=raw,value=kanban-crm
             type=raw,value=latest
 
