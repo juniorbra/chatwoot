@@ -227,6 +227,17 @@ class Conversation < ApplicationRecord
     )
   end
 
+  def pipeline_summary
+    custom_attributes&.dig('pipeline_summary')
+  end
+
+  def pipeline_summary=(text)
+    self.custom_attributes ||= {}
+    self.custom_attributes = custom_attributes.merge(
+      'pipeline_summary' => text&.truncate(150)
+    )
+  end
+
   def in_pipeline?
     pipeline_stage.present?
   end

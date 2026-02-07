@@ -29,6 +29,7 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
     end
 
     @conversation.pipeline_stage = stage_id
+    @conversation.pipeline_summary = params[:summary] if params.key?(:summary)
 
     if @conversation.save
       render json: { conversation: conversation_json(@conversation) }
@@ -52,6 +53,7 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
       contact_id: conversation.contact_id,
       status: conversation.status,
       pipeline_stage: conversation.pipeline_stage,
+      pipeline_summary: conversation.pipeline_summary,
       assignee_id: conversation.assignee_id,
       team_id: conversation.team_id,
       last_activity_at: conversation.last_activity_at&.to_i,

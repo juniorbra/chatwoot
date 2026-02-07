@@ -26,6 +26,7 @@ const inboxName = computed(
 );
 const assigneeName = computed(() => props.conversation.assignee?.name);
 const assigneeAvatar = computed(() => props.conversation.assignee?.avatar_url);
+const pipelineSummary = computed(() => props.conversation.pipeline_summary);
 
 const lastActivityAt = computed(() => {
   try {
@@ -80,6 +81,14 @@ const onCardClick = () => {
         </div>
       </div>
     </div>
+
+    <!-- Summary -->
+    <p
+      v-if="pipelineSummary"
+      class="text-xs text-slate-700 dark:text-slate-300 mb-2 line-clamp-3"
+    >
+      {{ pipelineSummary }}
+    </p>
 
     <!-- Conversation details -->
     <div class="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
