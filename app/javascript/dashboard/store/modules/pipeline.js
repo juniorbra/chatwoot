@@ -4,6 +4,7 @@ import PipelineAPI from '../../api/pipeline';
 export const state = {
   conversationsByStage: {},
   stages: [],
+  customAttributeDefinitions: [],
   statusFilter: '',
   uiFlags: {
     isFetching: false,
@@ -24,6 +25,9 @@ export const getters = {
   getConversationsByStageId: _state => stageId => {
     return _state.conversationsByStage[stageId] || [];
   },
+  getCustomAttributeDefinitions(_state) {
+    return _state.customAttributeDefinitions;
+  },
   getStatusFilter(_state) {
     return _state.statusFilter;
   },
@@ -38,6 +42,7 @@ export const actions = {
       commit(types.SET_PIPELINE_CONVERSATIONS, {
         conversationsByStage: response.data.conversations_by_stage,
         stages: response.data.stages,
+        customAttributeDefinitions: response.data.custom_attribute_definitions || [],
       });
     } catch (error) {
       // Error is expected to be handled by the API layer
@@ -76,9 +81,10 @@ export const mutations = {
     };
   },
 
-  [types.SET_PIPELINE_CONVERSATIONS](_state, { conversationsByStage, stages }) {
+  [types.SET_PIPELINE_CONVERSATIONS](_state, { conversationsByStage, stages, customAttributeDefinitions }) {
     _state.conversationsByStage = conversationsByStage;
     _state.stages = stages;
+    _state.customAttributeDefinitions = customAttributeDefinitions;
   },
 
   [types.SET_PIPELINE_STATUS_FILTER](_state, status) {

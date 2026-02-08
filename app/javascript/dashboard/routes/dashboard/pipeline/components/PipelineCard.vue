@@ -1,10 +1,12 @@
 <script setup>
 import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 import { frontendURL, conversationUrl } from 'dashboard/helper/URLHelper.js';
 import { dynamicTime, shortTimestamp } from 'shared/helpers/timeHelper';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
+import CardPriorityIcon from 'dashboard/components-next/Conversation/ConversationCard/CardPriorityIcon.vue';
 
 const props = defineProps({
   conversation: {
@@ -13,6 +15,7 @@ const props = defineProps({
   },
 });
 
+const store = useStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -26,7 +29,37 @@ const inboxName = computed(
 );
 const assigneeName = computed(() => props.conversation.assignee?.name);
 const assigneeAvatar = computed(() => props.conversation.assignee?.avatar_url);
-const pipelineSummary = computed(() => props.conversation.pipeline_summary);
+
+const customAttributeDefinitions = computed(
+  () => store.getters['pipeline/getCustomAttributeDefinitions']
+);
+
+const formatDate = value => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+};
+
+const formatValue = (value, type) => {
+  if (type === 'date') return formatDate(value);
+  return value;
+};
+
+const customAttributes = computed(() => {
+  const attrs = props.conversation.custom_attributes || {};
+  const definitions = customAttributeDefinitions.value || [];
+  return definitions
+    .filter(def => attrs[def.attribute_key] != null && attrs[def.attribute_key] !== '')
+    .map(def => ({
+      key: def.attribute_key,
+      label: def.attribute_display_name,
+      value: formatValue(attrs[def.attribute_key], def.attribute_display_type),
+      type: def.attribute_display_type,
+    }));
+});
 
 const lastActivityAt = computed(() => {
   try {
@@ -68,10 +101,17 @@ const onCardClick = () => {
         rounded-full
       />
       <div class="flex-1 min-w-0">
-        <div
-          class="font-medium text-sm text-slate-900 dark:text-slate-25 truncate"
-        >
-          {{ contactName }}
+        <div class="flex items-center gap-1">
+          <span
+            class="font-medium text-sm text-slate-900 dark:text-slate-25 truncate"
+          >
+            {{ contactName }}
+          </span>
+          <CardPriorityIcon
+            v-if="conversation.priority"
+            :priority="conversation.priority"
+            class="flex-shrink-0"
+          />
         </div>
         <div
           v-if="contactEmail"
@@ -82,13 +122,20 @@ const onCardClick = () => {
       </div>
     </div>
 
-    <!-- Summary -->
-    <p
-      v-if="pipelineSummary"
-      class="text-xs text-slate-700 dark:text-slate-300 mb-2 line-clamp-3"
+    <!-- Custom Attributes -->
+    <div
+      v-if="customAttributes.length"
+      class="mb-2 space-y-1 text-xs"
     >
-      {{ pipelineSummary }}
-    </p>
+      <div
+        v-for="attr in customAttributes"
+        :key="attr.key"
+        class="flex items-center gap-1"
+      >
+        <span class="text-slate-500 dark:text-slate-400">{{ attr.label }}:</span>
+        <span class="text-slate-800 dark:text-slate-200 truncate font-medium">{{ attr.value }}</span>
+      </div>
+    </div>
 
     <!-- Conversation details -->
     <div class="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">

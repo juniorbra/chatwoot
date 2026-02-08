@@ -14,9 +14,14 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
                                                .limit(25)
     end
 
+    @custom_attribute_definitions = current_account.custom_attribute_definitions
+                                                    .where(attribute_model: :conversation_attribute)
+                                                    .select(:id, :attribute_display_name, :attribute_key, :attribute_display_type)
+
     render json: {
       conversations_by_stage: @conversations_by_stage.transform_values { |convs| convs.map { |c| conversation_json(c) } },
-      stages: @stages.as_json(only: [:id, :name, :position, :color])
+      stages: @stages.as_json(only: [:id, :name, :position, :color]),
+      custom_attribute_definitions: @custom_attribute_definitions.as_json(only: %i[id attribute_display_name attribute_key attribute_display_type])
     }
   end
 
@@ -63,6 +68,7 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
       inbox_id: conversation.inbox_id,
       contact_id: conversation.contact_id,
       status: conversation.status,
+      priority: conversation.priority,
       pipeline_stage: conversation.pipeline_stage,
       pipeline_summary: conversation.pipeline_summary,
       assignee_id: conversation.assignee_id,
@@ -92,7 +98,8 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
                 id: conversation.team.id,
                 name: conversation.team.name
               }
-            end
+            end,
+      custom_attributes: conversation.custom_attributes&.except('pipeline_stage', 'pipeline_updated_at', 'pipeline_summary') || {}
     }
   end
 end
