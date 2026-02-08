@@ -26,7 +26,13 @@
       "TITLE": "Filtros",
       "ALL_INBOXES": "Todas as Caixas de Entrada",
       "ALL_TEAMS": "Todas as Equipes",
-      "ALL_AGENTS": "Todos os Agentes"
+      "ALL_AGENTS": "Todos os Agentes",
+      "STATUS": "Status",
+      "ALL_ACTIVE": "Todos ativos",
+      "OPEN": "Aberto",
+      "PENDING": "Pendente",
+      "SNOOZED": "Adiado",
+      "RESOLVED": "Resolvido"
     },
     "COLUMN": {
       "CONVERSATION": "{count} conversa",

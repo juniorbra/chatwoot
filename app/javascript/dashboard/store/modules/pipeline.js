@@ -4,6 +4,7 @@ import PipelineAPI from '../../api/pipeline';
 export const state = {
   conversationsByStage: {},
   stages: [],
+  statusFilter: '',
   uiFlags: {
     isFetching: false,
     isUpdating: false,
@@ -23,13 +24,17 @@ export const getters = {
   getConversationsByStageId: _state => stageId => {
     return _state.conversationsByStage[stageId] || [];
   },
+  getStatusFilter(_state) {
+    return _state.statusFilter;
+  },
 };
 
 export const actions = {
-  get: async function getPipelineConversations({ commit }) {
+  get: async function getPipelineConversations({ commit }, status = '') {
     commit(types.SET_PIPELINE_UI_FLAG, { isFetching: true });
+    commit(types.SET_PIPELINE_STATUS_FILTER, status);
     try {
-      const response = await PipelineAPI.get();
+      const response = await PipelineAPI.get(status || undefined);
       commit(types.SET_PIPELINE_CONVERSATIONS, {
         conversationsByStage: response.data.conversations_by_stage,
         stages: response.data.stages,
@@ -74,6 +79,10 @@ export const mutations = {
   [types.SET_PIPELINE_CONVERSATIONS](_state, { conversationsByStage, stages }) {
     _state.conversationsByStage = conversationsByStage;
     _state.stages = stages;
+  },
+
+  [types.SET_PIPELINE_STATUS_FILTER](_state, status) {
+    _state.statusFilter = status;
   },
 
   [types.UPDATE_PIPELINE_CONVERSATION](

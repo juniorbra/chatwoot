@@ -6,9 +6,9 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
     @stages = current_account.pipeline_stages.order(:position)
 
     @stages.each do |stage|
-      @conversations_by_stage[stage.id.to_s] = current_account
-                                               .conversations
-                                               .with_pipeline_stage(stage.id)
+      scope = current_account.conversations.with_pipeline_stage(stage.id)
+      scope = apply_status_filter(scope)
+      @conversations_by_stage[stage.id.to_s] = scope
                                                .includes(:inbox, :contact, :assignee, :team)
                                                .order(last_activity_at: :desc)
                                                .limit(25)
@@ -43,6 +43,17 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
   def conversation
     @conversation ||= current_account.conversations.find_by(display_id: params[:id])
     render_not_found_error('Conversation') unless @conversation
+  end
+
+  def apply_status_filter(scope)
+    status = params[:status]
+    valid_statuses = Conversation.statuses.keys
+
+    if status.present? && valid_statuses.include?(status)
+      scope.where(status: status)
+    else
+      scope.where.not(status: :resolved)
+    end
   end
 
   def conversation_json(conversation)

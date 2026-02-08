@@ -6,8 +6,9 @@ class PipelineAPI extends ApiClient {
     super('pipeline', { accountScoped: true });
   }
 
-  get() {
-    return axios.get(this.url);
+  get(status) {
+    const params = status ? { status } : {};
+    return axios.get(this.url, { params });
   }
 
   updateStage(conversationId, stage) {

@@ -26,7 +26,13 @@
       "TITLE": "Filters",
       "ALL_INBOXES": "All Inboxes",
       "ALL_TEAMS": "All Teams",
-      "ALL_AGENTS": "All Agents"
+      "ALL_AGENTS": "All Agents",
+      "STATUS": "Status",
+      "ALL_ACTIVE": "All active",
+      "OPEN": "Open",
+      "PENDING": "Pending",
+      "SNOOZED": "Snoozed",
+      "RESOLVED": "Resolved"
     },
     "COLUMN": {
       "CONVERSATION": "{count} conversation",
