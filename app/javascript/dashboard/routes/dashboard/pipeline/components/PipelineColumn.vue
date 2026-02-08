@@ -59,7 +59,7 @@ const dragOptions = computed(() => ({
 
 <template>
   <div
-    class="flex flex-col h-full bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700"
+    class="flex flex-col h-full min-h-0 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700"
   >
     <!-- Column Header -->
     <div

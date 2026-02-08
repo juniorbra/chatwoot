@@ -30,7 +30,7 @@ const handleMove = async ({ conversation, fromStage, toStage }) => {
 </script>
 
 <template>
-  <div class="flex-1 min-h-0 p-6">
+  <div class="h-full p-6">
     <div
       class="grid gap-4 h-full max-w-7xl mx-auto"
       :class="{
@@ -44,7 +44,7 @@ const handleMove = async ({ conversation, fromStage, toStage }) => {
           stages.length === 6,
       }"
     >
-      <div v-for="stage in stages" :key="stage.id" class="flex flex-col h-full">
+      <div v-for="stage in stages" :key="stage.id" class="flex flex-col min-h-0">
         <PipelineColumn
           :stage="stage"
           :conversations="conversationsByStage[stage.id] || []"
