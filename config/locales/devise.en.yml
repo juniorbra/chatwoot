@@ -19,12 +19,30 @@ en:
     mailer:
       confirmation_instructions:
         subject: "Confirmation Instructions"
+        greeting: "Hi %{name},"
+        invited: "%{inviter_name}, with %{account_name}, has invited you to try out %{brand_name}."
+        login_instruction: "You can login to your %{brand_name} account through the link below:"
+        welcome: "Welcome to %{brand_name}! We have a suite of powerful tools ready for you to explore. Before that we quickly need to verify your email address to know it's really you."
+        activate_instruction: "Please take a moment and click the link below and activate your account."
+        action_confirm: "Confirm my account"
+        action_login: "Login to my account"
       reset_password_instructions:
         subject: "Reset password instructions"
+        greeting: "Hello %{email}!"
+        instruction: "Someone has requested a link to change your password. You can do this through the link below."
+        action: "Change my password"
+        instruction_2: "If you didn't request this, please ignore this email."
+        instruction_3: "Your password won't change until you access the link above and create a new one."
       unlock_instructions:
         subject: "Unlock instructions"
+        greeting: "Hello %{email}!"
+        message: "Your account has been locked due to an excessive number of unsuccessful sign in attempts."
+        instruction: "Click the link below to unlock your account:"
+        action: "Unlock my account"
       password_change:
         subject: "Password Changed"
+        greeting: "Hello %{email}!"
+        message: "We're contacting you to notify you that your password has been changed."
     omniauth_callbacks:
       failure: "Could not authenticate you from %{kind} because \"%{reason}\"."
       success: "Successfully authenticated from %{kind} account."

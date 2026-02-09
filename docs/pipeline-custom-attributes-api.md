@@ -5,7 +5,7 @@
 | Ação | Método | Endpoint |
 |------|--------|----------|
 | Criar conversa | `POST` | `/api/v1/accounts/{account_id}/conversations` |
-| Atualizar conversa | `PATCH` | `/api/v1/accounts/{account_id}/conversations/{id}/update` |
+| Atualizar conversa | `PATCH` | `/api/v1/accounts/{account_id}/conversations/{display_id}` |
 | Definir stage do pipeline | `PATCH` | `/api/v1/accounts/{account_id}/pipeline/{display_id}/update_stage` |
 
 ## Autenticação
@@ -54,7 +54,7 @@ curl -X POST \
 
 ```bash
 curl -X PATCH \
-  'https://seu-dominio.com/api/v1/accounts/1/conversations/15/update' \
+  'https://seu-dominio.com/api/v1/accounts/1/conversations/15' \
   -H 'api_access_token: SEU_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
