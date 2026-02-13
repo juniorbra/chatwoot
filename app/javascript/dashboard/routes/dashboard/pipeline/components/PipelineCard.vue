@@ -80,7 +80,7 @@ const onCardClick = () => {
   const path = frontendURL(
     conversationUrl({
       accountId: route.params.accountId,
-      id: props.conversation.id,
+      id: props.conversation.display_id,
     })
   );
   router.push({ path });
