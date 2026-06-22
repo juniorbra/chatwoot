@@ -4,6 +4,7 @@ class PipelineStage < ApplicationRecord
   validates :name, presence: true, length: { maximum: 50 }
   validates :position, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than: 6 }
   validates :color, format: { with: /\A#[0-9A-Fa-f]{6}\z/ }, allow_blank: true
+  validates :description, length: { maximum: 500 }, allow_blank: true
   # validates :position, uniqueness: { scope: :account_id }
 
   default_scope { order(:position) }

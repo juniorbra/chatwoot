@@ -13,6 +13,7 @@ const isLoading = ref(false);
 const editingStage = ref(null);
 const newStageName = ref('');
 const newStageColor = ref('#3b82f6');
+const newStageDescription = ref('');
 const isAddingStage = ref(false);
 
 const canAddMore = computed(() => stages.value.length < 6);
@@ -41,11 +42,13 @@ const addStage = async () => {
         name: newStageName.value.trim(),
         position: stages.value.length,
         color: newStageColor.value,
+        description: newStageDescription.value.trim(),
       },
     });
     stages.value.push(response.data);
     newStageName.value = '';
     newStageColor.value = '#3b82f6';
+    newStageDescription.value = '';
     isAddingStage.value = false;
     useAlert('Pipeline stage added successfully');
   } catch (error) {
@@ -67,6 +70,7 @@ const updateStage = async () => {
       pipeline_stage: {
         name: editingStage.value.name,
         color: editingStage.value.color,
+        description: editingStage.value.description,
       },
     });
     const index = stages.value.findIndex(s => s.id === editingStage.value.id);
@@ -194,35 +198,30 @@ onMounted(() => {
 
           <div
             v-if="editingStage?.id === stage.id"
-            class="flex-1 flex items-center gap-4"
+            class="flex-1 flex flex-col gap-3"
           >
-            <input
-              v-model="editingStage.name"
-              type="text"
-              class="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-woot-500 focus:border-transparent"
-              placeholder="Stage name"
+            <div class="flex items-center gap-4">
+              <input
+                v-model="editingStage.name"
+                type="text"
+                class="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-woot-500 focus:border-transparent"
+                placeholder="Stage name"
+              />
+              <input
+                v-model="editingStage.color"
+                type="color"
+                class="w-12 h-10 rounded-lg border border-slate-300 cursor-pointer"
+              />
+              <Button solid blue sm @click="updateStage"> Save </Button>
+              <Button outline slate sm @click="cancelEdit"> Cancel </Button>
+            </div>
+            <textarea
+              v-model="editingStage.description"
+              rows="2"
+              maxlength="500"
+              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-woot-500 focus:border-transparent"
+              placeholder="Description — explain when a lead enters this stage. The AI reads this to classify leads."
             />
-            <input
-              v-model="editingStage.color"
-              type="color"
-              class="w-12 h-10 rounded-lg border border-slate-300 cursor-pointer"
-            />
-            <Button
-              solid
-              blue
-              sm
-              @click="updateStage"
-            >
-              Save
-            </Button>
-            <Button
-              outline
-              slate
-              sm
-              @click="cancelEdit"
-            >
-              Cancel
-            </Button>
           </div>
 
           <div v-else class="flex-1 flex items-center gap-4">
@@ -230,17 +229,18 @@ onMounted(() => {
               class="w-4 h-4 rounded"
               :style="{ backgroundColor: stage.color }"
             />
-            <span class="flex-1 font-medium text-slate-900 dark:text-slate-25">{{
-              stage.name
-            }}</span>
-            <Button
-              outline
-              slate
-              sm
-              @click="startEdit(stage)"
-            >
-              Edit
-            </Button>
+            <div class="flex-1">
+              <span class="font-medium text-slate-900 dark:text-slate-25">{{
+                stage.name
+              }}</span>
+              <p
+                v-if="stage.description"
+                class="mt-0.5 text-sm text-slate-600 dark:text-slate-400"
+              >
+                {{ stage.description }}
+              </p>
+            </div>
+            <Button outline slate sm @click="startEdit(stage)"> Edit </Button>
             <Button
               v-if="stages.length > 1"
               outline
@@ -257,34 +257,31 @@ onMounted(() => {
           v-if="isAddingStage"
           class="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"
         >
-          <div class="flex-1 flex items-center gap-4">
-            <input
-              v-model="newStageName"
-              type="text"
-              class="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-woot-500 focus:border-transparent"
-              placeholder="Stage name"
+          <div class="flex-1 flex flex-col gap-3">
+            <div class="flex items-center gap-4">
+              <input
+                v-model="newStageName"
+                type="text"
+                class="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-woot-500 focus:border-transparent"
+                placeholder="Stage name"
+              />
+              <input
+                v-model="newStageColor"
+                type="color"
+                class="w-12 h-10 rounded-lg border border-slate-300 cursor-pointer"
+              />
+              <Button solid blue sm @click="addStage"> Add </Button>
+              <Button outline slate sm @click="isAddingStage = false">
+                Cancel
+              </Button>
+            </div>
+            <textarea
+              v-model="newStageDescription"
+              rows="2"
+              maxlength="500"
+              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-woot-500 focus:border-transparent"
+              placeholder="Description — explain when a lead enters this stage. The AI reads this to classify leads."
             />
-            <input
-              v-model="newStageColor"
-              type="color"
-              class="w-12 h-10 rounded-lg border border-slate-300 cursor-pointer"
-            />
-            <Button
-              solid
-              blue
-              sm
-              @click="addStage"
-            >
-              Add
-            </Button>
-            <Button
-              outline
-              slate
-              sm
-              @click="isAddingStage = false"
-            >
-              Cancel
-            </Button>
           </div>
         </div>
 
@@ -299,7 +296,10 @@ onMounted(() => {
           Add Pipeline Stage
         </Button>
 
-        <div v-if="!canAddMore" class="text-sm text-slate-600 dark:text-slate-400">
+        <div
+          v-if="!canAddMore"
+          class="text-sm text-slate-600 dark:text-slate-400"
+        >
           Maximum of 6 pipeline stages reached
         </div>
       </div>
