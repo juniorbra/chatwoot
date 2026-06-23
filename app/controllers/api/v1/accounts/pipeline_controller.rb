@@ -20,7 +20,7 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
 
     render json: {
       conversations_by_stage: @conversations_by_stage.transform_values { |convs| convs.map { |c| conversation_json(c) } },
-      stages: @stages.as_json(only: [:id, :name, :position, :color]),
+      stages: @stages.as_json(only: [:id, :name, :position, :color, :description]),
       custom_attribute_definitions: @custom_attribute_definitions.as_json(only: %i[id attribute_display_name attribute_key attribute_display_type])
     }
   end
