@@ -1,12 +1,12 @@
 class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
-  before_action :conversation, only: [:update_stage]
+  before_action :conversation, only: [:update_stage, :update_outcome]
 
   def index
     @conversations_by_stage = {}
     @stages = current_account.pipeline_stages.order(:position)
 
     @stages.each do |stage|
-      scope = current_account.conversations.with_pipeline_stage(stage.id)
+      scope = current_account.conversations.with_pipeline_stage(stage.id).without_deal_outcome
       scope = apply_status_filter(scope)
       @conversations_by_stage[stage.id.to_s] = scope
                                                .includes(:inbox, :contact, :assignee, :team)
@@ -43,6 +43,39 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
     end
   end
 
+  # Closes a deal as won/lost (removing it from the active board) or reopens it (outcome=null).
+  def update_outcome
+    outcome = params[:outcome].presence
+
+    unless outcome.nil? || Conversation::DEAL_OUTCOMES.include?(outcome)
+      return render json: { error: "Invalid deal outcome: #{outcome}" }, status: :unprocessable_entity
+    end
+
+    @conversation.deal_outcome = outcome
+
+    if @conversation.save
+      render json: { conversation: conversation_json(@conversation) }
+    else
+      render json: { errors: @conversation.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  # Closed deals (won/lost), grouped by outcome — feeds the "Fechados" view.
+  def closed
+    scope = current_account.conversations.with_deal_outcome
+                           .includes(:inbox, :contact, :assignee, :team)
+                           .order(last_activity_at: :desc)
+                           .limit(50)
+
+    grouped = scope.group_by(&:deal_outcome)
+    render json: {
+      conversations_by_outcome: {
+        'won' => (grouped['won'] || []).map { |c| conversation_json(c) },
+        'lost' => (grouped['lost'] || []).map { |c| conversation_json(c) }
+      }
+    }
+  end
+
   private
 
   def conversation
@@ -71,6 +104,8 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
       priority: conversation.priority,
       pipeline_stage: conversation.pipeline_stage,
       pipeline_summary: conversation.pipeline_summary,
+      deal_outcome: conversation.deal_outcome,
+      deal_closed_at: conversation.custom_attributes&.dig('deal_closed_at'),
       assignee_id: conversation.assignee_id,
       team_id: conversation.team_id,
       last_activity_at: conversation.last_activity_at&.to_i,
@@ -99,7 +134,7 @@ class Api::V1::Accounts::PipelineController < Api::V1::Accounts::BaseController
                 name: conversation.team.name
               }
             end,
-      custom_attributes: conversation.custom_attributes&.except('pipeline_stage', 'pipeline_updated_at', 'pipeline_summary') || {}
+      custom_attributes: conversation.custom_attributes&.except('pipeline_stage', 'pipeline_updated_at', 'pipeline_summary', 'deal_outcome', 'deal_closed_at') || {}
     }
   end
 end

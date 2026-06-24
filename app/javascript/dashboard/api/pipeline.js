@@ -14,6 +14,16 @@ class PipelineAPI extends ApiClient {
   updateStage(conversationId, stage) {
     return axios.patch(`${this.url}/${conversationId}/update_stage`, { stage });
   }
+
+  updateOutcome(conversationId, outcome) {
+    return axios.patch(`${this.url}/${conversationId}/update_outcome`, {
+      outcome,
+    });
+  }
+
+  getClosed() {
+    return axios.get(`${this.url}/closed`);
+  }
 }
 
 export default new PipelineAPI();

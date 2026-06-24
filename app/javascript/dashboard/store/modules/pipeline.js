@@ -3,6 +3,7 @@ import PipelineAPI from '../../api/pipeline';
 
 export const state = {
   conversationsByStage: {},
+  conversationsByOutcome: { won: [], lost: [] },
   stages: [],
   customAttributeDefinitions: [],
   statusFilter: '',
@@ -25,6 +26,9 @@ export const getters = {
   getConversationsByStageId: _state => stageId => {
     return _state.conversationsByStage[stageId] || [];
   },
+  getConversationsByOutcome(_state) {
+    return _state.conversationsByOutcome;
+  },
   getCustomAttributeDefinitions(_state) {
     return _state.customAttributeDefinitions;
   },
@@ -42,7 +46,8 @@ export const actions = {
       commit(types.SET_PIPELINE_CONVERSATIONS, {
         conversationsByStage: response.data.conversations_by_stage,
         stages: response.data.stages,
-        customAttributeDefinitions: response.data.custom_attribute_definitions || [],
+        customAttributeDefinitions:
+          response.data.custom_attribute_definitions || [],
       });
     } catch (error) {
       // Error is expected to be handled by the API layer
@@ -71,6 +76,46 @@ export const actions = {
       commit(types.SET_PIPELINE_UI_FLAG, { isUpdating: false });
     }
   },
+
+  updateOutcome: async function updateConversationOutcome(
+    { commit },
+    { conversationId, outcome, fromStage }
+  ) {
+    commit(types.SET_PIPELINE_UI_FLAG, { isUpdating: true });
+    try {
+      const response = await PipelineAPI.updateOutcome(conversationId, outcome);
+      const conversation = response.data.conversation;
+      if (outcome) {
+        // Closing a deal removes it from the active board (stage cleared).
+        commit(types.UPDATE_PIPELINE_CONVERSATION, {
+          conversation,
+          fromStage,
+          toStage: null,
+        });
+      } else {
+        // Reopening removes it from the closed (won/lost) view.
+        commit(types.REMOVE_PIPELINE_FROM_OUTCOMES, conversation);
+      }
+      return conversation;
+    } catch (error) {
+      const errorMessage = error?.response?.data?.error || error?.message;
+      throw new Error(errorMessage);
+    } finally {
+      commit(types.SET_PIPELINE_UI_FLAG, { isUpdating: false });
+    }
+  },
+
+  getClosed: async function getClosedDeals({ commit }) {
+    commit(types.SET_PIPELINE_UI_FLAG, { isFetching: true });
+    try {
+      const response = await PipelineAPI.getClosed();
+      commit(types.SET_PIPELINE_CLOSED, response.data.conversations_by_outcome);
+    } catch (error) {
+      // Error is expected to be handled by the API layer
+    } finally {
+      commit(types.SET_PIPELINE_UI_FLAG, { isFetching: false });
+    }
+  },
 };
 
 export const mutations = {
@@ -81,7 +126,10 @@ export const mutations = {
     };
   },
 
-  [types.SET_PIPELINE_CONVERSATIONS](_state, { conversationsByStage, stages, customAttributeDefinitions }) {
+  [types.SET_PIPELINE_CONVERSATIONS](
+    _state,
+    { conversationsByStage, stages, customAttributeDefinitions }
+  ) {
     _state.conversationsByStage = conversationsByStage;
     _state.stages = stages;
     _state.customAttributeDefinitions = customAttributeDefinitions;
@@ -89,6 +137,24 @@ export const mutations = {
 
   [types.SET_PIPELINE_STATUS_FILTER](_state, status) {
     _state.statusFilter = status;
+  },
+
+  [types.SET_PIPELINE_CLOSED](_state, conversationsByOutcome) {
+    _state.conversationsByOutcome = {
+      won: conversationsByOutcome?.won || [],
+      lost: conversationsByOutcome?.lost || [],
+    };
+  },
+
+  [types.REMOVE_PIPELINE_FROM_OUTCOMES](_state, conversation) {
+    _state.conversationsByOutcome = {
+      won: (_state.conversationsByOutcome.won || []).filter(
+        c => c.id !== conversation.id
+      ),
+      lost: (_state.conversationsByOutcome.lost || []).filter(
+        c => c.id !== conversation.id
+      ),
+    };
   },
 
   [types.UPDATE_PIPELINE_CONVERSATION](

@@ -153,6 +153,10 @@ Rails.application.routes.draw do
           resources :pipeline, only: [:index] do
             member do
               patch :update_stage
+              patch :update_outcome
+            end
+            collection do
+              get :closed
             end
           end
 

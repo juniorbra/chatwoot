@@ -38,6 +38,20 @@
       "CONVERSATION": "{count} conversation",
       "CONVERSATIONS": "{count} conversations"
     },
+    "VIEW": {
+      "ACTIVE": "Funil",
+      "CLOSED": "Ganhos / Perdas"
+    },
+    "OUTCOME": {
+      "WON": "🏆 Ganho",
+      "LOST": "😞 Perda",
+      "MARK_WON": "🏆 Ganho",
+      "MARK_LOST": "😞 Perda",
+      "CONFIRM_WON": "Confirmar Ganho?",
+      "CONFIRM_LOST": "Confirmar Perda?",
+      "CANCEL": "✕",
+      "REOPEN": "↩ Reabrir"
+    },
     "API": {
       "SUCCESS_MESSAGE": "Conversation moved successfully",
       "ERROR_MESSAGE": "Failed to move conversation. Please try again.",

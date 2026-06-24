@@ -3,11 +3,13 @@ import { onMounted, computed, ref } from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import PipelineBoard from '../components/PipelineBoard.vue';
+import PipelineClosed from '../components/PipelineClosed.vue';
 
 const store = useStore();
 const { t } = useI18n();
 
 const statusFilter = ref('');
+const viewMode = ref('active');
 
 const statusOptions = [
   { value: '', label: t('PIPELINE.FILTERS.ALL_ACTIVE') },
@@ -34,6 +36,15 @@ const onStatusChange = event => {
   fetchPipeline();
 };
 
+const setViewMode = async mode => {
+  viewMode.value = mode;
+  if (mode === 'closed') {
+    await store.dispatch('pipeline/getClosed');
+  } else {
+    await fetchPipeline();
+  }
+};
+
 onMounted(fetchPipeline);
 </script>
 
@@ -51,27 +62,58 @@ onMounted(fetchPipeline);
           {{ t('PIPELINE.DESCRIPTION') }}
         </p>
       </div>
-      <div class="flex items-center gap-2">
-        <label
-          class="text-sm text-slate-600 dark:text-slate-400"
-          for="pipeline-status-filter"
-        >
-          {{ t('PIPELINE.FILTERS.STATUS') }}:
-        </label>
-        <select
-          id="pipeline-status-filter"
-          :value="statusFilter"
-          class="text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-woot-500"
-          @change="onStatusChange"
-        >
-          <option
-            v-for="option in statusOptions"
-            :key="option.value"
-            :value="option.value"
+      <div class="flex items-center gap-3">
+        <!-- Active | Closed toggle -->
+        <div class="flex items-center rounded-lg overflow-hidden">
+
+          <button
+            type="button"
+            class="text-sm px-3 py-1.5"
+            :class="
+              viewMode === 'active'
+                ? 'bg-woot-500 text-white'
+                : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+            "
+            @click="setViewMode('active')"
           >
-            {{ option.label }}
-          </option>
-        </select>
+            {{ t('PIPELINE.VIEW.ACTIVE') }}
+          </button>
+          <button
+            type="button"
+            class="text-sm px-3 py-1.5"
+            :class="
+              viewMode === 'closed'
+                ? 'bg-woot-500 text-white'
+                : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+            "
+            @click="setViewMode('closed')"
+          >
+            {{ t('PIPELINE.VIEW.CLOSED') }}
+          </button>
+        </div>
+
+        <div v-if="viewMode === 'active'" class="flex items-center gap-2">
+          <label
+            class="text-sm text-slate-600 dark:text-slate-400"
+            for="pipeline-status-filter"
+          >
+            {{ t('PIPELINE.FILTERS.STATUS') }}:
+          </label>
+          <select
+            id="pipeline-status-filter"
+            :value="statusFilter"
+            class="text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-woot-500"
+            @change="onStatusChange"
+          >
+            <option
+              v-for="option in statusOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -89,7 +131,8 @@ onMounted(fetchPipeline);
 
     <!-- Pipeline Board -->
     <div v-else class="flex-1 overflow-hidden">
-      <PipelineBoard />
+      <PipelineBoard v-if="viewMode === 'active'" />
+      <PipelineClosed v-else />
     </div>
   </div>
 </template>

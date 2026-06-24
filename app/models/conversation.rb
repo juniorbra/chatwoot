@@ -100,6 +100,8 @@ class Conversation < ApplicationRecord
   # Pipeline scopes
   scope :with_pipeline_stage, ->(stage_id) { where("custom_attributes->>'pipeline_stage' = ?", stage_id.to_s) }
   scope :in_pipeline, -> { where("custom_attributes ? 'pipeline_stage'") }
+  scope :with_deal_outcome, -> { where("custom_attributes->>'deal_outcome' IN ('won', 'lost')") }
+  scope :without_deal_outcome, -> { where("custom_attributes->>'deal_outcome' IS NULL") }
 
   belongs_to :account
   belongs_to :inbox
@@ -236,6 +238,34 @@ class Conversation < ApplicationRecord
     self.custom_attributes = custom_attributes.merge(
       'pipeline_summary' => text&.truncate(150)
     )
+  end
+
+  DEAL_OUTCOMES = %w[won lost].freeze
+
+  def deal_outcome
+    custom_attributes&.dig('deal_outcome')
+  end
+
+  # Closing a deal (won/lost) records the outcome and removes it from the active
+  # board by clearing the pipeline stage. Passing nil reopens it.
+  def deal_outcome=(outcome)
+    raise ArgumentError, "Invalid deal outcome: #{outcome}" unless outcome.nil? || DEAL_OUTCOMES.include?(outcome.to_s)
+
+    self.custom_attributes ||= {}
+    if outcome.nil?
+      # Reopen: restore the stage the deal was closed from, so the card returns to its column.
+      restored_stage = custom_attributes['deal_closed_from_stage']
+      self.custom_attributes = custom_attributes
+                               .except('deal_outcome', 'deal_closed_at', 'deal_closed_from_stage')
+                               .merge('pipeline_stage' => restored_stage)
+    else
+      self.custom_attributes = custom_attributes.merge(
+        'deal_outcome' => outcome.to_s,
+        'deal_closed_at' => Time.current.iso8601,
+        'deal_closed_from_stage' => pipeline_stage,
+        'pipeline_stage' => nil
+      )
+    end
   end
 
   def in_pipeline?
